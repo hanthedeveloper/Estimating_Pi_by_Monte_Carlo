@@ -55,7 +55,7 @@ Estimating_Pi_by_Monte_Carlo/
 ├── analyze_weak.py
 │
 ├── try_*.py                # hızlı deneme scriptleri (rapora girmeyen ön denemeler)
-├── tests/                  # test_estimators.py (şu an boş)
+├── tests/                  # test_estimators.py (pytest testleri)
 └── results/                # deney çıktıları (CSV) ve grafikler (PNG)
 ```
 
@@ -76,7 +76,8 @@ Gereksinimler: Python ≥ 3.11 (ölçümler Python 3.13.1 ile alındı) ve [Poet
 poetry install
 ```
 
-Bu komut `pimc` paketini ve bağımlılıkları (`numpy`, `pandas`, `matplotlib`, `pydantic`) kurar.
+Bu komut `pimc` paketini, bağımlılıkları (`numpy`, `pandas`, `matplotlib`, `pydantic`) ve geliştirme grubundaki `pytest`'i kurar.
+`poetry.lock` dosyasını elle düzenlemeyin; bağımlılık eklemek için `poetry add ...` kullanın ve güncellenen `pyproject.toml` ile `poetry.lock` dosyalarını birlikte commit'leyin.
 
 > **Önemli:** Tüm komutları **proje kök klasöründen** çalıştırın. Scriptler `results/...` yolunu göreli yazar; başka klasörden çalıştırırsanız dosyalar yanlış yere yazılır veya bulunamaz.
 
@@ -109,6 +110,8 @@ print(r.workers, r.pi_estimate, r.elapsed)
 
 `chunk`: NumPy'ın bir seferde ürettiği nokta sayısıdır (varsayılan `1_000_000`). Bellek kullanımını ve önbellek davranışını belirler; sonuçlarda önemli bir etkisi vardır (bkz. bölüm 4).
 
+Geçersiz girişler `ValueError` verir: `n ≤ 0`, `workers < 1`, `chunk < 1` ve `n < workers` (her işçiye en az bir nokta düşmelidir).
+
 ### 3.2 Deneyleri çalıştırma
 
 ```bash
@@ -131,7 +134,8 @@ Uyarılar:
 
 - **CSV dosyaları üzerine yazılmaz, sonuna eklenir.** Bir deneyi tekrar çalıştırırsanız satırlar ikiye katlanır ve medyan/ortalama bozulur. Yeniden çalıştırmadan önce ilgili CSV'yi silin.
 - Ölçümler uzun sürebilir (özellikle `n = 10⁸` ve saf Python). Her ölçüm hemen dosyaya yazıldığı için deney yarıda kesilse de o ana kadarki satırlar korunur.
-- Bir ölçüm hata verirse mesaj yazdırılır, o ölçüm atlanır ve deney devam eder.
+- `run_benchmark` başlamadan önce ayarları (`n`, `repeats`, `base_seed`) `RunConfig` ile doğrular. Geçersiz bir değer varsa uzun deney başlamadan hata verir.
+- Bir ölçüm sırasında hata olursa mesaj yazdırılır, o ölçüm atlanır ve deney devam eder.
 - Ölçüm sırasında bilgisayarda başka ağır işlem çalıştırmayın; zamanlamaları bozar.
 
 ### 3.3 Analiz ve grafikler
@@ -159,6 +163,14 @@ Her script özet tabloyu terminale yazdırır ve grafiği kaydeder. Eşleşmeler
 `analyze_chunk.py`, `analyze_speedup.py` içindeki `make_table` fonksiyonunu kullanır; bu yüzden iki dosya aynı klasörde kalmalıdır.
 
 `try_*.py` dosyaları rapora girmeyen hızlı denemelerdir (ör. `try_bench.py` `results/try.csv` yazar). Normal akışta çalıştırmanız gerekmez.
+
+### 3.4 Testler
+
+```bash
+poetry run pytest
+```
+
+`tests/test_estimators.py` şunları kontrol eder: seri ve paralel tahminlerin π'ye yakınlığı, aynı tohumla aynı sonucun çıkması, geçersiz `n`, `workers`, `chunk` değerlerinin `ValueError` vermesi ve `RunConfig`'in hatalı değerleri reddetmesi.
 
 ---
 
@@ -270,6 +282,7 @@ Hesaplamalarda seri taban çizgisi, **aynı CSV içindeki seri ölçümün medya
 ## 5. Notlar ve sınırlılıklar
 
 - **Sonuçlar makineye özgüdür.** Mevcut ölçümler Intel Core i5-10500 (6 fiziksel çekirdek, 12 mantıksal çekirdek) üzerinde alınmıştır. Başka bir işlemcide speedup eğrileri ve chunk etkisi farklı çıkabilir. Kendi makinenizde karşılaştırma yapmak için deneyleri yeniden çalıştırın.
+- **Pool kurulum süresi ölçüme dahil değildir.** İşçi süreçleri zamanlayıcı başlamadan önce açılır. Büyük `n`'de fark önemsizdir ama küçük `n`'de (`smalln` deneyi) paralelin avantajı gerçek kullanımda burada görünenden daha azdır; paralelin seriyi geçtiği `n` eşiği gerçekte daha büyüktür.
 - **Dışarıdaki etkiler:** Ölçümler sırasında başka süreçler açıktı ve bellek baskısı olmuş olabilir. Bu, özellikle `p = 6` ve `p = 12`'deki tekrarlar arası dağılımı artırabilir.
 - **Önbellek açıklaması bir hipotezdir.** Chunk ve bellek bant genişliği yorumu ölçümlerle *tutarlıdır*, ancak önbellek isabet oranı doğrudan ölçülmemiştir (`perf` vb. kullanılmadı).
 - **Çoklu işlem başlatma yöntemi:** Python 3.13'te Linux varsayılanı `fork`'tur. Python 3.14 ile varsayılan değişirse zamanlamalar etkilenebilir.

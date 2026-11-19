@@ -225,3 +225,5 @@ Bu bir açıklama, önbellek isabet oranını perf ile ölçmedik. Raporda “tu
 Dikkat edilecek iki nokta
 RAM durumu: free çıktısında boş bellek 472 MiB, swap kullanımda (248 MiB). Deneyler sırasında makine bellek baskısı altında olmuş olabilir, bu ölçümlere gürültü ekleyebilir. Raporda “ölçümler sırasında diğer süreçler açıktı, RAM baskısı vardı” gibi bir sınırlılık notu düşmek dürüst olur. Özellikle p=6 ve p=12'deki dağınık tekrarlarla ilişkili olabilir.
 Python 3.13: pyproject.toml’da python = ">=3.11" yazıyor. Raporda test edilen sürümü 3.13.1 olarak belirt. Python 3.13'ün varsayılan multiprocessing başlatma yöntemi Linux’ta hâlâ fork. (3.14'te forkserver olacak, bu sonuçları etkileyebilir, bir sınırlılık notu olarak geçebilir.)
+
+“Pool kurulum süresi ölçüme dahil değildir, küçük n’de paralelin avantajı gerçek kullanımda daha azdır”

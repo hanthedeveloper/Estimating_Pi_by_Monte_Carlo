@@ -67,6 +67,8 @@ def count_numpy(n: int, seed_seq: np.random.SeedSequence, chunk: int = CHUNK) ->
         so the resulting estimate may differ slightly. Both values are valid
         Monte Carlo estimates.
     """
+    if chunk < 1:
+        raise ValueError("chunk must be >= 1") 
     rng = np.random.default_rng(seed_seq)
     inside = 0
     remaining = n

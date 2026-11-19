@@ -24,8 +24,7 @@ def append_row(path: str, result: EstimateResult, repeat: int, seed: int) -> Non
     """
     file = Path(path)
     file.parent.mkdir(parents=True, exist_ok=True)
-    is_new = not file.exists()  # write the header only for a new file
-
+    is_new = not file.exists() or file.stat().st_size == 0  # header for new/empty file
     row = result.model_dump()
     row["repeat"] = repeat
     row["seed"] = seed

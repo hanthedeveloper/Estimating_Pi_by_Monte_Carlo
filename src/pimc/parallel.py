@@ -66,6 +66,10 @@ class ParallelEstimator(PiEstimator):
     def __init__(self, workers: int, method: str = "numpy", chunk: int = CHUNK):
         if method not in _METHODS:
             raise ValueError(f"method must be 'pure' or 'numpy', got: {method}")
+        if workers < 1:
+            raise ValueError(f"workers must be >= 1, got: {workers}")
+        if chunk < 1:
+            raise ValueError(f"chunk must be >= 1, got: {chunk}")
         self.workers = workers
         self.method = method
         self.chunk = chunk
@@ -75,6 +79,12 @@ class ParallelEstimator(PiEstimator):
     def _worker_count(self) -> int:
         """Hook override: report the configured number of workers."""
         return self.workers
+
+    def _validate(self, n: int) -> None:
+        """Hook override: also require at least one point per worker."""
+        super()._validate(n)
+        if n < self.workers:
+            raise ValueError(f"n ({n}) must be >= workers ({self.workers})")
 
     def _prepare(self) -> None:
         """Hook override: create the process pool before timing starts."""

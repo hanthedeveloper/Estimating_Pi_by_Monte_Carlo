@@ -1,6 +1,6 @@
 """Generic benchmark driver shared by all experiment scripts."""
 
-from pimc.base import PiEstimator
+from pimc.base import PiEstimator, RunConfig
 from pimc.io_utils import append_row
 
 
@@ -25,6 +25,10 @@ def run_benchmark(estimators: list[PiEstimator], ns: list[int],
         A failing measurement is reported and skipped so that one error does
         not discard a long-running experiment.
     """
+    # Validate settings up front so a typo doesn't waste a long experiment.
+    for n in ns:
+        RunConfig(n=n, repeats=repeats, seed=base_seed)
+
     for est in estimators:
         for n in ns:
             for rep in range(repeats):
