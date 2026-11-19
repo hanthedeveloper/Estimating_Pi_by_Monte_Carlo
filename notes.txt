@@ -214,3 +214,14 @@ olduğu hipotezini güçlü biçimde destekliyor. Ama doğrudan ölçmedik. “K
 Aynı kod, aynı makine, aynı iş. Tek değişen chunk boyutu. p=6'da speedup 1.76'dan 5.22'ye çıktı. Yani NumPy’ın zayıf ölçeklenmesi paralel algoritmanın ya da Python’un kusuru değil, veri çalışma kümesinin boyutuyla ilgili. Chunk küçükken diziler çekirdeğin kendi önbelleğinde kalıyor, çekirdekler ortak kaynağı (L3 ve ana bellek) birbirinden çalmıyor.
 
 Rapor dili için: “ölçümler bellek hiyerarşisi hipoteziyle tutarlıdır”. Önbellek isabet oranını doğrudan ölçmediğimiz için “kanıtladık” yazma.
+
+
+Chunk bulgusuyla bağlantı (5.2 için)
+chunk=10⁴: x ve y dizileri 80 KB’şar, geçici dizilerle birlikte yaklaşık 250-300 KB. Çekirdek başına L2'ye (256 KiB) yakın ya da onun içinde sayılır. Bu yüzden en iyi ölçeklenen ayar.
+chunk=10⁵: her işçi yaklaşık 2-3 MB tutuyor. 4 işçi toplamda L3 (12 MiB) sınırına yaklaşıyor, 6 işçide aşıyor. Speedup’ın p=4'ten sonra düşmesiyle tutarlı.
+chunk=10⁶: işçi başına 20 MB’ı aşan çalışma kümesi, L3'e hiç sığmıyor ve ana belleğe gidiyor. Speedup ~1.8'de tıkanıyor.
+Bu bir açıklama, önbellek isabet oranını perf ile ölçmedik. Raporda “tutarlı” diye yaz.
+
+Dikkat edilecek iki nokta
+RAM durumu: free çıktısında boş bellek 472 MiB, swap kullanımda (248 MiB). Deneyler sırasında makine bellek baskısı altında olmuş olabilir, bu ölçümlere gürültü ekleyebilir. Raporda “ölçümler sırasında diğer süreçler açıktı, RAM baskısı vardı” gibi bir sınırlılık notu düşmek dürüst olur. Özellikle p=6 ve p=12'deki dağınık tekrarlarla ilişkili olabilir.
+Python 3.13: pyproject.toml’da python = ">=3.11" yazıyor. Raporda test edilen sürümü 3.13.1 olarak belirt. Python 3.13'ün varsayılan multiprocessing başlatma yöntemi Linux’ta hâlâ fork. (3.14'te forkserver olacak, bu sonuçları etkileyebilir, bir sınırlılık notu olarak geçebilir.)
