@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "pimc"
+version = "0.1.0"
+description = "Monte Carlo ile pi tahmini: seri ve paralel"
+packages = [{ include = "pimc", from = "src" }]
+
+[tool.poetry.dependencies]
+python = ">=3.11"
+pydantic = ">=2"
+numpy = "*"
+pandas = "^3.1.1"
+matplotlib = "^3.11.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
